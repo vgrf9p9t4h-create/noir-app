@@ -85,8 +85,14 @@ function goTo(target){
  const focus=target==="focus";
  setScreen(focus);
  if(focus){window.scrollTo({top:0,behavior:"smooth"});return;}
- const node=$(target==="add"?"add-section":"all-section");
- requestAnimationFrame(()=>{node.scrollIntoView({behavior:"smooth",block:"start"});if(target==="add")$("task-title").focus({preventScroll:true});});
+ if(target==="tasks"){
+  // Always show the beginning of the schedule instead of jumping to the task list.
+  window.scrollTo({top:0,left:0,behavior:"instant"});
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"instant"}));
+  return;
+ }
+ const node=$("add-section");
+ requestAnimationFrame(()=>{node.scrollIntoView({behavior:"smooth",block:"start"});$("task-title").focus({preventScroll:true});});
 }
 document.querySelectorAll("[data-jump]").forEach(btn=>btn.addEventListener("click",()=>goTo(btn.dataset.jump)));
 $("focus-exit").addEventListener("click",()=>goTo("tasks"));
