@@ -65,3 +65,14 @@ footer{text-align:center;color:#555;font-size:9px;letter-spacing:.25em;padding:1
 .backup-actions{display:flex;flex-wrap:wrap;gap:9px}.backup-actions button{margin:0;flex:1;white-space:nowrap}
 .version{color:#ed3939}
 @media(max-width:520px){.task{align-items:flex-start}.task-meta{flex-wrap:wrap;justify-content:flex-end;max-width:130px}.task-main{padding-top:1px}.backup-actions button{flex-basis:100%}}
+
+.week-header{display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px;color:#999;font-size:12px}
+.week-header button{font-size:11px;padding:6px 10px}
+.week-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-bottom:16px}
+.week-day{margin:0;padding:10px 2px;background:#171717;border:1px solid #303030;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:4px;color:#bbb}
+.week-day.selected{border-color:#ed3939;background:#2a1414;color:white}
+.week-dow{font-size:10px}.week-num{font-size:17px}.week-tasks{font-size:9px;color:#888}
+.task.overdue{border-color:#9b3333;background:#211313}
+.task.overdue .task-sub{color:#ff7777}
+.task-meta{flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:520px){.week-strip{gap:3px}.week-day{padding:9px 0}.week-num{font-size:15px}}

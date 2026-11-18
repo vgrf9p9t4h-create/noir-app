@@ -8,22 +8,58 @@ try {const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");if(Array.is
 // Old NOIR entries had no date; treat them as today's tasks when upgrading.
 tasks=tasks.filter(t=>t && typeof t.title==="string").map(t=>({...t,date:/^\d{4}-\d{2}-\d{2}$/.test(t.date||"")?t.date:todayKey(),priority:priorityLabel[t.priority]?t.priority:"normal",done:!!t.done}));
 let filter="today";
+let selectedDay=null;
 let editingId=null;
+const addDays=(key,days)=>{const d=new Date(key+"T12:00:00");d.setDate(d.getDate()+days);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+const daysBetween=(a,b)=>Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/86400000);
+const makeId=()=>typeof crypto!=="undefined"&&crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`;
+function generateRepeats(){
+ const today=todayKey(),end=addDays(today,14);
+ let changed=false;
+ for(const base of [...tasks]){
+  if(!["daily","weekly"].includes(base.repeat)||base.repeatParent)continue;
+  const interval=base.repeat==="daily"?1:7;
+  const elapsed=Math.max(1,Math.ceil(daysBetween(base.date,today)/interval));
+  for(let day=addDays(base.date,elapsed*interval);day<=end;day=addDays(day,interval)){
+   if(day<today)continue;
+   if(tasks.some(t=>t.repeatParent===base.id&&t.date===day))continue;
+   tasks.push({...base,id:makeId(),date:day,done:false,repeat:"none",repeatParent:base.id,created:Date.now()});
+   changed=true;
+  }
+ }
+ if(changed)try{localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks));}catch(e){console.warn(e);}
+}
+function renderWeek(){
+ const host=$("week-strip");host.replaceChildren();
+ const today=todayKey();
+ for(let i=0;i<7;i++){
+  const day=addDays(today,i),d=new Date(day+"T12:00:00");
+  const btn=el("button","week-day"+(selectedDay===day?" selected":""));
+  btn.type="button";
+  btn.append(el("span","week-dow",["日","月","火","水","木","金","土"][d.getDay()]),el("strong","week-num",String(d.getDate())));
+  const n=tasks.filter(t=>t.date===day&&!t.done).length;
+  btn.append(el("small","week-tasks",n?`${n}件`:"—"));
+  btn.setAttribute("aria-pressed",String(selectedDay===day));
+  btn.addEventListener("click",()=>{selectedDay=selectedDay===day?null:day;render();});
+  host.append(btn);
+ }
+ $("week-reset").hidden=!selectedDay;
+}
 const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;};
-const sorted=items=>[...items].sort((a,b)=>a.date.localeCompare(b.date)||(a.time||"99:99").localeCompare(b.time||"99:99")||({top:0,important:1,normal:2}[a.priority]-{top:0,important:1,normal:2}[b.priority])||(a.created||0)-(b.created||0));
+const sorted=items=>[...items].sort((a,b)=>a.date.localeCompare(b.date)||((Number.isFinite(a.order)||Number.isFinite(b.order))?(Number.isFinite(a.order)?a.order:999999)-(Number.isFinite(b.order)?b.order:999999):0)||(a.time||"99:99").localeCompare(b.time||"99:99")||({top:0,important:1,normal:2}[a.priority]-{top:0,important:1,normal:2}[b.priority])||(a.created||0)-(b.created||0));
 function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks));}catch(e){alert("保存できませんでした。ブラウザの空き容量や設定を確認してください。");}render();}
 function updateDate(){const d=new Date();$("today").textContent=`${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}  ${["SUN","MON","TUE","WED","THU","FRI","SAT"][d.getDay()]}`;}
-function resetForm(){editingId=null;$("task-form").reset();$("task-date").value=todayKey();$("form-heading").textContent="タスクを追加";$("submit-task").textContent="追加 ＋";$("cancel-edit").hidden=true;}
-function editTask(t){editingId=t.id;$("task-title").value=t.title;$("task-date").value=t.date;$("task-time").value=t.time||"";$("task-priority").value=t.priority;$("form-heading").textContent="タスクを編集";$("submit-task").textContent="変更を保存";$("cancel-edit").hidden=false;$("task-form").scrollIntoView({behavior:"smooth",block:"center"});$("task-title").focus();}
+function resetForm(){editingId=null;$("task-form").reset();$("task-date").value=todayKey();$("task-repeat").value="none";$("form-heading").textContent="タスクを追加";$("submit-task").textContent="追加 ＋";$("cancel-edit").hidden=true;}
+function editTask(t){editingId=t.id;$("task-title").value=t.title;$("task-date").value=t.date;$("task-time").value=t.time||"";$("task-priority").value=t.priority;$("task-repeat").value=t.repeat||"none";$("form-heading").textContent="タスクを編集";$("submit-task").textContent="変更を保存";$("cancel-edit").hidden=false;$("task-form").scrollIntoView({behavior:"smooth",block:"center"});$("task-title").focus();}
 function render(){
-  updateDate();
+  generateRepeats();updateDate();renderWeek();
   const today=todayKey();
   const top=sorted(tasks.filter(t=>!t.done&&t.priority==="top"&&t.date===today)).slice(0,3);
   $("priority-count").textContent=`${pad(top.length)} / 03`;
   const priority=$("priority-list");priority.replaceChildren();
   if(!top.length)priority.append(el("p","empty","今日の最優先タスクはありません。"));
   top.forEach((t,i)=>{const c=el("div","priority-card");c.append(el("span","priority-number",`0${i+1}`),el("div","priority-title",t.title));if(t.time)c.append(el("span","priority-time",t.time));priority.append(c);});
-  const shown=sorted(tasks.filter(t=>filter==="all"||(filter==="today"?t.date===today:t.date>today)));
+  const shown=sorted(tasks.filter(t=>selectedDay?t.date===selectedDay:(filter==="all"||(filter==="today"?t.date===today:t.date>today))));
   $("all-count").textContent=`${shown.length} ITEMS`;
   const completed=shown.filter(t=>t.done).length;
   $("progress-fill").style.width=`${shown.length?Math.round(completed/shown.length*100):0}%`;
@@ -32,25 +68,36 @@ function render(){
   const list=$("task-list");list.replaceChildren();
   if(!shown.length)list.append(el("p","empty",filter==="today"?"今日のタスクはありません。":"表示するタスクはありません。"));
   shown.forEach(t=>{
-    const row=el("div",`task${t.done?" done":""}`);
+    const row=el("div",`task${t.done?" done":""}${!t.done&&t.date<today?" overdue":""}`);
     const check=el("input","check");check.type="checkbox";check.checked=t.done;check.setAttribute("aria-label",`${t.title}を完了にする`);check.addEventListener("change",()=>{t.done=check.checked;persist();});row.append(check);
-    const main=el("div","task-main");main.append(el("div","task-name",t.title));const info=el("div","task-sub",`${t.date}${t.time?" · "+t.time:""}`);main.append(info);row.append(main);
+    const main=el("div","task-main");main.append(el("div","task-name",t.title));const info=el("div","task-sub",`${t.date}${t.time?" · "+t.time:""}${t.repeat==="daily"?" · 毎日":t.repeat==="weekly"?" · 毎週":""}${t.repeatParent?" · 繰り返し":""}${!t.done&&t.date<today?" · 期限切れ":""}`);main.append(info);row.append(main);
     const meta=el("div","task-meta");meta.append(el("span",`tag ${t.priority}`,priorityLabel[t.priority]));
+    const move=(direction)=>{
+      const peers=sorted(tasks.filter(x=>x.date===t.date));
+      const idx=peers.findIndex(x=>x.id===t.id),other=peers[idx+direction];
+      if(!other)return;
+      [peers[idx],peers[idx+direction]]=[peers[idx+direction],peers[idx]];
+      peers.forEach((item,i)=>{item.order=i;});
+      persist();
+    };
+    const up=el("button","icon-btn","↑");up.type="button";up.title="上に移動";up.setAttribute("aria-label",`${t.title}を上へ`);up.addEventListener("click",()=>move(-1));meta.append(up);
+    const down=el("button","icon-btn","↓");down.type="button";down.title="下に移動";down.setAttribute("aria-label",`${t.title}を下へ`);down.addEventListener("click",()=>move(1));meta.append(down);
     const edit=el("button","icon-btn","編集");edit.type="button";edit.setAttribute("aria-label",`${t.title}を編集`);edit.addEventListener("click",()=>editTask(t));meta.append(edit);
     const del=el("button","delete","×");del.type="button";del.setAttribute("aria-label",`${t.title}を削除`);del.addEventListener("click",()=>{if(confirm(`「${t.title}」を削除しますか？`)){tasks=tasks.filter(x=>x.id!==t.id);if(editingId===t.id)resetForm();persist();}});meta.append(del);row.append(meta);list.append(row);
   });
 }
 $("task-form").addEventListener("submit",e=>{
   e.preventDefault();const title=$("task-title").value.trim();if(!title)return;
-  const data={title,date:$("task-date").value||todayKey(),time:$("task-time").value,priority:$("task-priority").value};
+  const data={title,date:$("task-date").value||todayKey(),time:$("task-time").value,priority:$("task-priority").value,repeat:$("task-repeat").value};
   if(editingId){const t=tasks.find(t=>t.id===editingId);if(t)Object.assign(t,data);}
-  else tasks.push({...data,id:(crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`),done:false,created:Date.now()});
+  else tasks.push({...data,id:makeId(),done:false,created:Date.now()});
   resetForm();persist();
 });
 $("cancel-edit").addEventListener("click",resetForm);
-document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{filter=b.dataset.filter;render();}));
+document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{selectedDay=null;filter=b.dataset.filter;render();}));
+$("week-reset").addEventListener("click",()=>{selectedDay=null;render();});
 $("export-data").addEventListener("click",()=>{
-  const blob=new Blob([JSON.stringify({app:"NOIR",version:2,exportedAt:new Date().toISOString(),tasks},null,2)],{type:"application/json"});
+  const blob=new Blob([JSON.stringify({app:"NOIR",version:3,exportedAt:new Date().toISOString(),tasks},null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`NOIR-backup-${todayKey()}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
 });
 $("import-data").addEventListener("click",()=>$("import-file").click());
@@ -61,7 +108,7 @@ $("import-file").addEventListener("change",async e=>{
     const data=JSON.parse(await file.text());if(data.app!=="NOIR"||!Array.isArray(data.tasks)||data.tasks.length>10000)throw Error("NOIRのバックアップではありません。");
     if(!data.tasks.every(t=>t&&typeof t.title==="string"&&t.title.length<=80&&/^\d{4}-\d{2}-\d{2}$/.test(t.date)&&priorityLabel[t.priority]&&typeof t.done==="boolean"))throw Error("バックアップの形式が正しくありません。");
     if(confirm("現在のタスクをバックアップの内容で置き換えます。続けますか？")){
-      tasks=data.tasks.map(t=>({id:String(t.id||`${Date.now()}-${Math.random()}`),title:t.title,date:t.date,time:typeof t.time==="string"?t.time:"",priority:t.priority,done:t.done,created:Number(t.created)||Date.now()}));
+      tasks=data.tasks.map(t=>({id:String(t.id||`${Date.now()}-${Math.random()}`),title:t.title,date:t.date,time:typeof t.time==="string"?t.time:"",priority:t.priority,done:t.done,created:Number(t.created)||Date.now(),repeat:["daily","weekly"].includes(t.repeat)?t.repeat:"none",repeatParent:typeof t.repeatParent==="string"?t.repeatParent:null,order:Number.isFinite(t.order)?t.order:null}));
       resetForm();persist();alert("読み込みが完了しました。");
     }
   }catch(err){alert(`読み込めませんでした: ${err.message}`);}finally{e.target.value="";}

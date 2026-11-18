@@ -46,6 +46,7 @@
         <div class="form-row">
           <input id="task-date" type="date" aria-label="予定日" required>
           <input id="task-time" type="time" aria-label="時刻">
+          <select id="task-repeat" aria-label="繰り返し"><option value="none">繰り返しなし</option><option value="daily">毎日</option><option value="weekly">毎週</option></select>
           <select id="task-priority" aria-label="重要度">
             <option value="normal">通常</option>
             <option value="important">重要</option>
@@ -70,6 +71,7 @@
         <button type="button" class="filter" data-filter="upcoming">今後</button>
         <button type="button" class="filter" data-filter="all">すべて</button>
       </div>
+      <div class="week-header"><span>週間カレンダー</span><button type="button" id="week-reset" class="secondary-btn">選択解除</button></div><div class="week-strip" id="week-strip"></div>
       <div class="progress"><div id="progress-fill"></div></div>
       <p class="progress-text" id="progress-text">0 / 0 完了</p>
       <div id="task-list" class="task-list">
@@ -86,7 +88,7 @@
         <input id="import-file" type="file" accept="application/json,.json" hidden>
       </div>
     </section>
-    <footer>LESS NOISE. MORE FOCUS. <span class="version">V2</span></footer>
+    <footer>LESS NOISE. MORE FOCUS. <span class="version">V3</span></footer>
   </main>
   <script src="app.js"></script>
   <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.error));</script>
