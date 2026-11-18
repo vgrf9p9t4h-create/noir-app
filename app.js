@@ -91,13 +91,99 @@ function goTo(target){
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"instant"}));
   return;
  }
- const node=$("add-section");
- requestAnimationFrame(()=>{node.scrollIntoView({behavior:"smooth",block:"start"});$("task-title").focus({preventScroll:true});});
+ const node=$(target==="wallpaper"?"wallpaper-section":"add-section");
+ requestAnimationFrame(()=>{node.scrollIntoView({behavior:"smooth",block:"start"});if(target==="add")$("task-title").focus({preventScroll:true});});
 }
 document.querySelectorAll("[data-jump]").forEach(btn=>btn.addEventListener("click",()=>goTo(btn.dataset.jump)));
 $("focus-exit").addEventListener("click",()=>goTo("tasks"));
+
+function wallpaperTasks(){
+ const includeDone=$("wallpaper-include-done").checked;
+ return sorted(tasks.filter(t=>t.date===todayKey()&&t.priority==="top"&&(includeDone||!t.done))).slice(0,3);
+}
+function wallpaperRounded(ctx,x,y,w,h,r){
+ ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();
+}
+function wallpaperText(ctx,text,x,y,maxWidth,fontSize=64){
+ ctx.font=`700 ${fontSize}px -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif`;
+ // Break long titles across up to two lines while preserving Japanese glyphs.
+ const chars=Array.from(text),lines=[];let line="";
+ for(const ch of chars){
+  if(ctx.measureText(line+ch).width>maxWidth&&line){lines.push(line);line=ch;}
+  else line+=ch;
+ }
+ if(line)lines.push(line);
+ ctx.fillText(lines[0]||"",x,y);
+ if(lines.length>1)ctx.fillText(lines.length>2?lines[1].slice(0,-1)+"…":lines[1],x,y+74);
+}
+function renderWallpaper(){
+ const canvas=$("wallpaper-canvas");if(!canvas)return;
+ const ctx=canvas.getContext("2d");if(!ctx)return;
+ const W=canvas.width,H=canvas.height;
+ ctx.fillStyle="#080808";ctx.fillRect(0,0,W,H);
+ if($("wallpaper-style").value==="gradient"){
+  const g=ctx.createRadialGradient(580,920,100,580,920,1250);
+  g.addColorStop(0,"#351116");g.addColorStop(1,"#080808");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ }
+ // Keep top 580px empty for iOS lock-screen clock and widgets.
+ ctx.textBaseline="alphabetic";
+ ctx.fillStyle="#f6f6f6";ctx.font='800 78px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif';
+ ctx.fillText("NOIR",76,680);
+ ctx.fillStyle="#e63838";ctx.fillText(".",290,680);
+ ctx.fillStyle="#a0a0a0";ctx.font='600 28px -apple-system, BlinkMacSystemFont, sans-serif';
+ ctx.fillText("TODAY'S PRIORITIES",76,780);
+ ctx.fillStyle="#f6f6f6";ctx.font='700 68px -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif';
+ ctx.fillText("今日、やること。",76,892);
+ const ts=wallpaperTasks();
+ for(let i=0;i<3;i++){
+  const y=990+i*270;
+  ctx.fillStyle="#191919";wallpaperRounded(ctx,76,y,1027,225,32);
+  ctx.fillStyle="#e63838";ctx.font='700 37px -apple-system, sans-serif';ctx.fillText(String(i+1).padStart(2,"0"),112,y+113);
+  ctx.fillStyle=ts[i]?"#f6f6f6":"#777";
+  wallpaperText(ctx,ts[i]?.title||"最優先タスクを追加しよう",200,y+112,835,ts[i]?54:39);
+ }
+ ctx.fillStyle="#737373";ctx.font='400 30px -apple-system, sans-serif';
+ const date=new Intl.DateTimeFormat("ja-JP",{month:"long",day:"numeric",weekday:"long"}).format(new Date());
+ ctx.fillText(date,76,1945);
+ ctx.fillStyle="#e63838";ctx.fillRect(76,2000,105,5);
+ ctx.fillStyle="#555";ctx.font='500 24px -apple-system, sans-serif';
+ ctx.fillText("LESS NOISE. MORE FOCUS.",76,2075);
+}
+async function wallpaperBlob(){
+ const canvas=$("wallpaper-canvas");
+ return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error("画像の作成に失敗しました")),"image/png"));
+}
+function wallpaperStatus(message){$("wallpaper-status").textContent=message;}
+$("wallpaper-style").addEventListener("change",renderWallpaper);
+$("wallpaper-include-done").addEventListener("change",renderWallpaper);
+$("wallpaper-save").addEventListener("click",async()=>{
+ try{
+  const blob=await wallpaperBlob();
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=`NOIR-wallpaper-${todayKey()}.png`;document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),15000);
+  wallpaperStatus("画像を保存しました。iPhoneでは「ファイル」アプリのダウンロードを確認してね。");
+ }catch(e){wallpaperStatus(e.message);}
+});
+$("wallpaper-share").addEventListener("click",async()=>{
+ try{
+  const blob=await wallpaperBlob();
+  const file=new File([blob],`NOIR-wallpaper-${todayKey()}.png`,{type:"image/png"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+   await navigator.share({files:[file],title:"NOIRの壁紙"});
+   wallpaperStatus("共有メニューを開きました。「画像を保存」などを選んでね。");
+  }else{
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement("a");a.href=url;a.download=file.name;a.click();
+   setTimeout(()=>URL.revokeObjectURL(url),15000);
+   wallpaperStatus("共有に未対応のため画像をダウンロードしました。");
+  }
+ }catch(e){if(e.name!=="AbortError")wallpaperStatus("共有できませんでした。画像を保存するボタンを試してね。");}
+});
+
 function render(){
-  generateRepeats();updateDate();renderWeek();renderFocus();
+  generateRepeats();updateDate();renderWeek();renderFocus();renderWallpaper();
   const today=todayKey();
   const top=sorted(tasks.filter(t=>!t.done&&t.priority==="top"&&t.date===today)).slice(0,3);
   $("priority-count").textContent=`${pad(top.length)} / 03`;

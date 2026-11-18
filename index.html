@@ -9,7 +9,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/noir-192.png">
   <title>NOIR</title>
-  <link rel="stylesheet" href="style.css?v=4.3">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <main class="app" id="top">
@@ -24,6 +24,7 @@
       <button type="button" data-jump="focus" class="nav-button"><span aria-hidden="true">◎</span><small>集中</small></button>
       <button type="button" data-jump="tasks" class="nav-button"><span aria-hidden="true">▦</span><small>予定</small></button>
       <button type="button" data-jump="add" class="nav-button nav-add"><span aria-hidden="true">＋</span><small>追加</small></button>
+      <button type="button" data-jump="wallpaper" class="nav-button"><span aria-hidden="true">▧</span><small>壁紙</small></button>
     </nav>
     <header class="topbar">
       <div>
@@ -90,6 +91,23 @@
         <p class="empty">タスクを追加すると、ここに表示されます。</p>
       </div>
     </section>
+    <section class="wallpaper-section" id="wallpaper-section">
+      <p class="eyebrow">NOIR WALLPAPER STUDIO</p>
+      <h2>ロック画面の壁紙</h2>
+      <p class="wallpaper-help">今日の最優先タスクを最大3件、壁紙画像にして保存。iPhoneの時計と重ならない位置に配置します。</p>
+      <div class="wallpaper-controls">
+        <label for="wallpaper-style">デザイン</label>
+        <select id="wallpaper-style" aria-label="壁紙デザイン"><option value="minimal">ミニマル・ブラック</option><option value="gradient">ディープ・レッド</option></select>
+        <label for="wallpaper-include-done" class="wallpaper-toggle"><input id="wallpaper-include-done" type="checkbox"> 完了済みタスクも表示</label>
+      </div>
+      <div class="wallpaper-preview"><canvas id="wallpaper-canvas" width="1179" height="2556" aria-label="壁紙のプレビュー"></canvas></div>
+      <div class="wallpaper-actions">
+        <button type="button" id="wallpaper-save">壁紙画像を保存 ↓</button>
+        <button type="button" id="wallpaper-share" class="secondary-btn">共有・写真に保存</button>
+      </div>
+      <p class="wallpaper-help" id="wallpaper-status" role="status">タスクを追加・変更したらプレビューも自動で更新されます。</p>
+      <p class="wallpaper-help">保存した画像を「写真」アプリで開き、共有 →「壁紙に設定」から適用してね。予定を変更した場合、壁紙の再保存・再設定が必要です。</p>
+    </section>
     <section class="backup-section">
       <p class="eyebrow">YOUR DATA, YOUR CONTROL</p>
       <h2>データのバックアップ</h2>
@@ -100,9 +118,9 @@
         <input id="import-file" type="file" accept="application/json,.json" hidden>
       </div>
     </section>
-    <footer>LESS NOISE. MORE FOCUS. <span class="version">V4.3</span></footer>
+    <footer>LESS NOISE. MORE FOCUS. <span class="version">V5</span></footer>
   </main>
-  <script src="app.js?v=4.3"></script>
+  <script src="app.js?v=5"></script>
   <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.error));</script>
 </body>
 </html>
