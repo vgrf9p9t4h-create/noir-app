@@ -1,74 +1,71 @@
-const $ = (id) => document.getElementById(id);
-const STORAGE_KEY = "noir_tasks_v2";
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = "noir_tasks_v2"; // Keep the original key so existing data remains.
+const priorityLabel = {normal:"通常",important:"重要",top:"最優先"};
+const pad = n => String(n).padStart(2,"0");
+const todayKey = () => {const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 let tasks = [];
-try { tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { tasks = []; }
-
-const priorityLabel = { normal: "通常", important: "重要", top: "最優先" };
-const pad = n => String(n).padStart(2, "0");
-
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  render();
-}
-function dateText() {
-  const d = new Date();
-  $("today").textContent = `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}  ${["SUN","MON","TUE","WED","THU","FRI","SAT"][d.getDay()]}`;
-}
-function ordered(list) {
-  return [...list].sort((a,b) => {
-    const rank = {top:0, important:1, normal:2};
-    return (rank[a.priority]-rank[b.priority]) || ((a.time || "99:99").localeCompare(b.time || "99:99")) || (a.created-b.created);
+try {const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");if(Array.isArray(saved))tasks=saved;} catch(e){console.warn("Stored data could not be loaded",e);}
+// Old NOIR entries had no date; treat them as today's tasks when upgrading.
+tasks=tasks.filter(t=>t && typeof t.title==="string").map(t=>({...t,date:/^\d{4}-\d{2}-\d{2}$/.test(t.date||"")?t.date:todayKey(),priority:priorityLabel[t.priority]?t.priority:"normal",done:!!t.done}));
+let filter="today";
+let editingId=null;
+const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;};
+const sorted=items=>[...items].sort((a,b)=>a.date.localeCompare(b.date)||(a.time||"99:99").localeCompare(b.time||"99:99")||({top:0,important:1,normal:2}[a.priority]-{top:0,important:1,normal:2}[b.priority])||(a.created||0)-(b.created||0));
+function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks));}catch(e){alert("保存できませんでした。ブラウザの空き容量や設定を確認してください。");}render();}
+function updateDate(){const d=new Date();$("today").textContent=`${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}  ${["SUN","MON","TUE","WED","THU","FRI","SAT"][d.getDay()]}`;}
+function resetForm(){editingId=null;$("task-form").reset();$("task-date").value=todayKey();$("form-heading").textContent="タスクを追加";$("submit-task").textContent="追加 ＋";$("cancel-edit").hidden=true;}
+function editTask(t){editingId=t.id;$("task-title").value=t.title;$("task-date").value=t.date;$("task-time").value=t.time||"";$("task-priority").value=t.priority;$("form-heading").textContent="タスクを編集";$("submit-task").textContent="変更を保存";$("cancel-edit").hidden=false;$("task-form").scrollIntoView({behavior:"smooth",block:"center"});$("task-title").focus();}
+function render(){
+  updateDate();
+  const today=todayKey();
+  const top=sorted(tasks.filter(t=>!t.done&&t.priority==="top"&&t.date===today)).slice(0,3);
+  $("priority-count").textContent=`${pad(top.length)} / 03`;
+  const priority=$("priority-list");priority.replaceChildren();
+  if(!top.length)priority.append(el("p","empty","今日の最優先タスクはありません。"));
+  top.forEach((t,i)=>{const c=el("div","priority-card");c.append(el("span","priority-number",`0${i+1}`),el("div","priority-title",t.title));if(t.time)c.append(el("span","priority-time",t.time));priority.append(c);});
+  const shown=sorted(tasks.filter(t=>filter==="all"||(filter==="today"?t.date===today:t.date>today)));
+  $("all-count").textContent=`${shown.length} ITEMS`;
+  const completed=shown.filter(t=>t.done).length;
+  $("progress-fill").style.width=`${shown.length?Math.round(completed/shown.length*100):0}%`;
+  $("progress-text").textContent=`${completed} / ${shown.length} 完了`;
+  document.querySelectorAll(".filter").forEach(b=>{b.classList.toggle("active",b.dataset.filter===filter);b.setAttribute("aria-pressed",String(b.dataset.filter===filter));});
+  const list=$("task-list");list.replaceChildren();
+  if(!shown.length)list.append(el("p","empty",filter==="today"?"今日のタスクはありません。":"表示するタスクはありません。"));
+  shown.forEach(t=>{
+    const row=el("div",`task${t.done?" done":""}`);
+    const check=el("input","check");check.type="checkbox";check.checked=t.done;check.setAttribute("aria-label",`${t.title}を完了にする`);check.addEventListener("change",()=>{t.done=check.checked;persist();});row.append(check);
+    const main=el("div","task-main");main.append(el("div","task-name",t.title));const info=el("div","task-sub",`${t.date}${t.time?" · "+t.time:""}`);main.append(info);row.append(main);
+    const meta=el("div","task-meta");meta.append(el("span",`tag ${t.priority}`,priorityLabel[t.priority]));
+    const edit=el("button","icon-btn","編集");edit.type="button";edit.setAttribute("aria-label",`${t.title}を編集`);edit.addEventListener("click",()=>editTask(t));meta.append(edit);
+    const del=el("button","delete","×");del.type="button";del.setAttribute("aria-label",`${t.title}を削除`);del.addEventListener("click",()=>{if(confirm(`「${t.title}」を削除しますか？`)){tasks=tasks.filter(x=>x.id!==t.id);if(editingId===t.id)resetForm();persist();}});meta.append(del);row.append(meta);list.append(row);
   });
 }
-function el(tag, cls, text) {
-  const node = document.createElement(tag);
-  if (cls) node.className = cls;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-function render() {
-  const active = tasks.filter(t => !t.done);
-  const top = ordered(active.filter(t => t.priority === "top")).slice(0,3);
-  $("priority-count").textContent = `${pad(top.length)} / 03`;
-  const priority = $("priority-list");
-  priority.replaceChildren();
-  if (!top.length) priority.append(el("p","empty","最優先に設定した未完了タスクがここに表示されます。"));
-  top.forEach((task,i) => {
-    const card = el("div","priority-card");
-    card.append(el("span","priority-number",`0${i+1}`));
-    card.append(el("div","priority-title",task.title));
-    if (task.time) card.append(el("span","priority-time",task.time));
-    priority.append(card);
-  });
-
-  $("all-count").textContent = `${tasks.length} ITEMS`;
-  const list = $("task-list");
-  list.replaceChildren();
-  if (!tasks.length) list.append(el("p","empty","タスクを追加すると、ここに表示されます。"));
-  ordered(tasks).forEach(task => {
-    const row = el("div",`task${task.done ? " done" : ""}`);
-    const check = el("input","check");
-    check.type = "checkbox"; check.checked = task.done;
-    check.setAttribute("aria-label","完了にする");
-    check.addEventListener("change", () => { task.done = check.checked; save(); });
-    row.append(check);
-    row.append(el("span","task-name",task.title));
-    const meta = el("div","task-meta");
-    if (task.time) meta.append(el("span","task-time",task.time));
-    meta.append(el("span",`tag ${task.priority}`,priorityLabel[task.priority]));
-    const del = el("button","delete","×");
-    del.type = "button"; del.setAttribute("aria-label","削除");
-    del.addEventListener("click", () => { tasks = tasks.filter(t => t.id !== task.id); save(); });
-    meta.append(del); row.append(meta); list.append(row);
-  });
-}
-$("task-form").addEventListener("submit", e => {
-  e.preventDefault();
-  const title = $("task-title").value.trim();
-  if (!title) return;
-  tasks.push({id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), title, time:$("task-time").value, priority:$("task-priority").value, done:false, created:Date.now()});
-  $("task-title").value = ""; $("task-time").value = ""; $("task-priority").value = "normal";
-  save();
+$("task-form").addEventListener("submit",e=>{
+  e.preventDefault();const title=$("task-title").value.trim();if(!title)return;
+  const data={title,date:$("task-date").value||todayKey(),time:$("task-time").value,priority:$("task-priority").value};
+  if(editingId){const t=tasks.find(t=>t.id===editingId);if(t)Object.assign(t,data);}
+  else tasks.push({...data,id:(crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`),done:false,created:Date.now()});
+  resetForm();persist();
 });
-dateText();
-render();
+$("cancel-edit").addEventListener("click",resetForm);
+document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{filter=b.dataset.filter;render();}));
+$("export-data").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify({app:"NOIR",version:2,exportedAt:new Date().toISOString(),tasks},null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`NOIR-backup-${todayKey()}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+});
+$("import-data").addEventListener("click",()=>$("import-file").click());
+$("import-file").addEventListener("change",async e=>{
+  const file=e.target.files[0];if(!file)return;
+  try{
+    if(file.size>2*1024*1024)throw Error("ファイルが大きすぎます。");
+    const data=JSON.parse(await file.text());if(data.app!=="NOIR"||!Array.isArray(data.tasks)||data.tasks.length>10000)throw Error("NOIRのバックアップではありません。");
+    if(!data.tasks.every(t=>t&&typeof t.title==="string"&&t.title.length<=80&&/^\d{4}-\d{2}-\d{2}$/.test(t.date)&&priorityLabel[t.priority]&&typeof t.done==="boolean"))throw Error("バックアップの形式が正しくありません。");
+    if(confirm("現在のタスクをバックアップの内容で置き換えます。続けますか？")){
+      tasks=data.tasks.map(t=>({id:String(t.id||`${Date.now()}-${Math.random()}`),title:t.title,date:t.date,time:typeof t.time==="string"?t.time:"",priority:t.priority,done:t.done,created:Number(t.created)||Date.now()}));
+      resetForm();persist();alert("読み込みが完了しました。");
+    }
+  }catch(err){alert(`読み込めませんでした: ${err.message}`);}finally{e.target.value="";}
+});
+resetForm();render();
+// Refresh today's view when returning to the app after midnight.
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)render();});

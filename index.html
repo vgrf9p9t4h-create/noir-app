@@ -38,19 +38,21 @@
       <div class="section-heading">
         <div>
           <p class="eyebrow">MAKE IT HAPPEN</p>
-          <h2>タスクを追加</h2>
+          <h2 id="form-heading">タスクを追加</h2>
         </div>
       </div>
       <form id="task-form" class="task-form">
         <input id="task-title" type="text" maxlength="80" placeholder="やるべきことを入力…" required>
         <div class="form-row">
+          <input id="task-date" type="date" aria-label="予定日" required>
           <input id="task-time" type="time" aria-label="時刻">
           <select id="task-priority" aria-label="重要度">
             <option value="normal">通常</option>
             <option value="important">重要</option>
             <option value="top">最優先</option>
           </select>
-          <button type="submit">追加 <span>＋</span></button>
+          <button id="submit-task" type="submit">追加 <span>＋</span></button>
+          <button id="cancel-edit" type="button" class="secondary-btn" hidden>編集をやめる</button>
         </div>
       </form>
     </section>
@@ -63,11 +65,28 @@
         </div>
         <span class="count" id="all-count">0 ITEMS</span>
       </div>
+      <div class="filters" role="group" aria-label="タスクの表示範囲">
+        <button type="button" class="filter active" data-filter="today">今日</button>
+        <button type="button" class="filter" data-filter="upcoming">今後</button>
+        <button type="button" class="filter" data-filter="all">すべて</button>
+      </div>
+      <div class="progress"><div id="progress-fill"></div></div>
+      <p class="progress-text" id="progress-text">0 / 0 完了</p>
       <div id="task-list" class="task-list">
         <p class="empty">タスクを追加すると、ここに表示されます。</p>
       </div>
     </section>
-    <footer>LESS NOISE. MORE FOCUS.</footer>
+    <section class="backup-section">
+      <p class="eyebrow">YOUR DATA, YOUR CONTROL</p>
+      <h2>データのバックアップ</h2>
+      <p class="backup-help">端末変更やブラウザデータ削除に備えて保存できます。</p>
+      <div class="backup-actions">
+        <button type="button" id="export-data" class="secondary-btn">バックアップを保存</button>
+        <button type="button" id="import-data" class="secondary-btn">バックアップを読み込む</button>
+        <input id="import-file" type="file" accept="application/json,.json" hidden>
+      </div>
+    </section>
+    <footer>LESS NOISE. MORE FOCUS. <span class="version">V2</span></footer>
   </main>
   <script src="app.js"></script>
   <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.error));</script>
