@@ -51,8 +51,37 @@ function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks));}
 function updateDate(){const d=new Date();$("today").textContent=`${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}  ${["SUN","MON","TUE","WED","THU","FRI","SAT"][d.getDay()]}`;}
 function resetForm(){editingId=null;$("task-form").reset();$("task-date").value=todayKey();$("task-repeat").value="none";$("form-heading").textContent="タスクを追加";$("submit-task").textContent="追加 ＋";$("cancel-edit").hidden=true;}
 function editTask(t){editingId=t.id;$("task-title").value=t.title;$("task-date").value=t.date;$("task-time").value=t.time||"";$("task-priority").value=t.priority;$("task-repeat").value=t.repeat||"none";$("form-heading").textContent="タスクを編集";$("submit-task").textContent="変更を保存";$("cancel-edit").hidden=false;$("task-form").scrollIntoView({behavior:"smooth",block:"center"});$("task-title").focus();}
+function renderFocus(){
+ const today=todayKey();
+ const todayTasks=sorted(tasks.filter(t=>t.date===today&&t.priority==="top")).slice(0,3);
+ $("focus-date").textContent=new Intl.DateTimeFormat("ja-JP",{month:"long",day:"numeric",weekday:"short"}).format(new Date());
+ const host=$("focus-items");host.replaceChildren();
+ for(let i=0;i<3;i++){
+  const task=todayTasks[i],row=el("div","focus-item"+(task?.done?" focus-done":""));
+  row.append(el("span","focus-index",String(i+1).padStart(2,"0")));
+  if(task){
+   const title=el("span","focus-task-title",task.title);
+   row.append(title);
+   if(task.time)row.append(el("span","focus-task-time",task.time));
+   const btn=el("button","focus-check",task.done?"✓":"○");
+   btn.type="button";btn.setAttribute("aria-label",task.done?`${task.title}を未完了にする`:`${task.title}を完了にする`);
+   btn.addEventListener("click",()=>{task.done=!task.done;persist();});
+   row.append(btn);
+  }else row.append(el("span","focus-placeholder","最優先タスクを追加しよう"));
+  host.append(row);
+ }
+ $("focus-progress").textContent=`${todayTasks.filter(t=>t.done).length} / ${todayTasks.length} COMPLETE`;
+}
+function goTo(target){
+ if(target==="focus"){document.body.classList.add("focus-mode");window.scrollTo({top:0,behavior:"smooth"});return;}
+ document.body.classList.remove("focus-mode");
+ const node=$(target==="add"?"add-section":"all-section");
+ requestAnimationFrame(()=>{node.scrollIntoView({behavior:"smooth",block:"start"});if(target==="add")$("task-title").focus({preventScroll:true});});
+}
+document.querySelectorAll("[data-jump]").forEach(btn=>btn.addEventListener("click",()=>goTo(btn.dataset.jump)));
+$("focus-exit").addEventListener("click",()=>goTo("tasks"));
 function render(){
-  generateRepeats();updateDate();renderWeek();
+  generateRepeats();updateDate();renderWeek();renderFocus();
   const today=todayKey();
   const top=sorted(tasks.filter(t=>!t.done&&t.priority==="top"&&t.date===today)).slice(0,3);
   $("priority-count").textContent=`${pad(top.length)} / 03`;
@@ -116,3 +145,6 @@ $("import-file").addEventListener("change",async e=>{
 resetForm();render();
 // Refresh today's view when returning to the app after midnight.
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)render();});
+
+// Open in focus mode for a quick glance on iPhone; tasks remain accessible via the bottom navigation.
+document.body.classList.add("focus-mode");

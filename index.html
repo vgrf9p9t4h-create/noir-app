@@ -12,7 +12,19 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="app">
+  <main class="app" id="top">
+    <section class="hero-focus" id="hero-focus" aria-label="フォーカス表示">
+      <div class="focus-top"><span class="focus-brand">NOIR<span class="dot">.</span></span><span class="focus-date" id="focus-date"></span></div>
+      <p class="focus-kicker">TODAY'S TOP THREE</p>
+      <h2 class="focus-heading">今日、やること。</h2>
+      <div class="focus-items" id="focus-items"></div>
+      <div class="focus-bottom"><span id="focus-progress">0 / 3 COMPLETE</span><button type="button" class="focus-exit" id="focus-exit">一覧へ ↓</button></div>
+    </section>
+    <nav class="bottom-nav" aria-label="NOIRナビゲーション">
+      <button type="button" data-jump="focus" class="nav-button"><span aria-hidden="true">◉</span><small>集中</small></button>
+      <button type="button" data-jump="tasks" class="nav-button"><span aria-hidden="true">☷</span><small>予定</small></button>
+      <button type="button" data-jump="add" class="nav-button nav-add"><span aria-hidden="true">＋</span><small>追加</small></button>
+    </nav>
     <header class="topbar">
       <div>
         <p class="eyebrow">YOUR DAY, IN CONTROL</p>
@@ -21,7 +33,7 @@
       <div class="date" id="today"></div>
     </header>
 
-    <section class="priority-section">
+    <section class="priority-section" id="priority-section">
       <div class="section-heading">
         <div>
           <p class="eyebrow">FOCUS ON WHAT MATTERS</p>
@@ -34,7 +46,7 @@
       </div>
     </section>
 
-    <section class="add-section">
+    <section class="add-section" id="add-section">
       <div class="section-heading">
         <div>
           <p class="eyebrow">MAKE IT HAPPEN</p>
@@ -58,7 +70,7 @@
       </form>
     </section>
 
-    <section class="all-section">
+    <section class="all-section" id="all-section">
       <div class="section-heading">
         <div>
           <p class="eyebrow">THE FULL PICTURE</p>
@@ -88,7 +100,7 @@
         <input id="import-file" type="file" accept="application/json,.json" hidden>
       </div>
     </section>
-    <footer>LESS NOISE. MORE FOCUS. <span class="version">V3</span></footer>
+    <footer>LESS NOISE. MORE FOCUS. <span class="version">V4</span></footer>
   </main>
   <script src="app.js"></script>
   <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.error));</script>

@@ -76,3 +76,36 @@ footer{text-align:center;color:#555;font-size:9px;letter-spacing:.25em;padding:1
 .task.overdue .task-sub{color:#ff7777}
 .task-meta{flex-wrap:wrap;justify-content:flex-end}
 @media(max-width:520px){.week-strip{gap:3px}.week-day{padding:9px 0}.week-num{font-size:15px}}
+
+/* NOIR V4: immersive iPhone-first focus display */
+html{scroll-behavior:smooth}
+body{padding-bottom:env(safe-area-inset-bottom,0px)}
+.app{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+.hero-focus{display:none}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;gap:8px;padding:9px 14px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(14,14,14,.96);border-top:1px solid #343434;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.nav-button{width:min(120px,30%);min-height:52px;background:transparent;color:#aaa;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:4px;border-radius:12px;margin:0}
+.nav-button span{font-size:23px;line-height:1}.nav-button small{font-size:10px;letter-spacing:.06em}
+.nav-button:hover,.nav-button:focus-visible{background:#262626;color:#fff}
+.nav-add{color:#ff5555}
+.focus-mode .app>.topbar,.focus-mode .app>.priority-section,.focus-mode .app>.add-section,.focus-mode .app>.all-section,.focus-mode .app>.backup-section,.focus-mode .app>footer{display:none}
+.focus-mode .hero-focus{display:flex}
+.hero-focus{min-height:calc(100dvh - 150px - env(safe-area-inset-bottom,0px));flex-direction:column;justify-content:flex-start;padding:12px 0 16px;margin:0}
+.focus-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.focus-brand{font-size:29px;font-weight:800;letter-spacing:.16em}
+.focus-date{font-size:12px;color:#999}
+.focus-kicker{font-size:10px;font-weight:800;letter-spacing:.27em;color:#ed3939;margin:clamp(35px,8vh,85px) 0 12px}
+.focus-heading{font-size:clamp(27px,7vw,48px);letter-spacing:-.04em;margin:0 0 25px}
+.focus-items{display:grid;gap:12px}
+.focus-item{display:flex;align-items:center;gap:12px;min-height:88px;padding:18px 14px;border:1px solid #3a2525;border-left:4px solid #ed3939;border-radius:13px;background:linear-gradient(100deg,#271616,#151515 75%)}
+.focus-index{font-size:11px;font-weight:800;color:#ed3939;align-self:flex-start;padding-top:5px}
+.focus-task-title{font-size:clamp(17px,4.6vw,27px);font-weight:800;line-height:1.45;overflow-wrap:anywhere;flex:1}
+.focus-placeholder{font-size:14px;color:#777;flex:1}
+.focus-task-time{font-size:11px;color:#aaa}
+.focus-check{background:transparent;border:1px solid #804545;color:#fff;min-width:42px;min-height:42px;padding:6px;margin:0;font-size:23px;border-radius:50%}
+.focus-done{opacity:.55;border-color:#333;border-left-color:#555}
+.focus-done .focus-task-title{text-decoration:line-through}
+.focus-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:28px;font-size:11px;letter-spacing:.1em;color:#777}
+.focus-exit{margin:0;background:transparent;border:1px solid #3b3b3b;color:#ddd}
+#all-section,#add-section{scroll-margin-top:20px}
+@media(min-width:650px){.hero-focus{max-width:650px;margin:0 auto}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
