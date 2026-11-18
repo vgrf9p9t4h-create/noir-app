@@ -166,6 +166,20 @@ $("wallpaper-save").addEventListener("click",async()=>{
   wallpaperStatus("画像を保存しました。iPhoneでは「ファイル」アプリのダウンロードを確認してね。");
  }catch(e){wallpaperStatus(e.message);}
 });
+$("wallpaper-shortcut").addEventListener("click",async()=>{
+ const btn=$("wallpaper-shortcut");btn.disabled=true;
+ try{
+  const blob=await wallpaperBlob();
+  const file=new File([blob],`NOIR-wallpaper-${todayKey()}.png`,{type:"image/png"});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+   wallpaperStatus("共有メニューで「NOIR 壁紙変更」を選んでね。初回は下の設定手順を確認してね。");
+   await navigator.share({files:[file]});
+  }else{
+   wallpaperStatus("この環境では画像の共有が使えません。Safariから開くか、「壁紙画像を保存」を利用してね。");
+  }
+ }catch(e){if(e.name!=="AbortError")wallpaperStatus("共有できませんでした。Safariから試すか、画像保存を利用してね。");}
+ finally{btn.disabled=false;}
+});
 $("wallpaper-share").addEventListener("click",async()=>{
  try{
   const blob=await wallpaperBlob();

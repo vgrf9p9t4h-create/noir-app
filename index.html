@@ -9,7 +9,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/noir-192.png">
   <title>NOIR</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <main class="app" id="top">
@@ -102,11 +102,20 @@
       </div>
       <div class="wallpaper-preview"><canvas id="wallpaper-canvas" width="1179" height="2556" aria-label="壁紙のプレビュー"></canvas></div>
       <div class="wallpaper-actions">
-        <button type="button" id="wallpaper-save">壁紙画像を保存 ↓</button>
+        <button type="button" id="wallpaper-shortcut">ショートカットで壁紙を変更 ↗</button>
+        <button type="button" id="wallpaper-save" class="secondary-btn">壁紙画像を保存 ↓</button>
         <button type="button" id="wallpaper-share" class="secondary-btn">共有・写真に保存</button>
       </div>
+      <details class="shortcut-help"><summary>初回設定：iPhoneのショートカットを作る</summary>
+        <ol><li>iPhoneの「ショートカット」アプリで新しいショートカットを作成し、名前を「NOIR 壁紙変更」にする。</li>
+        <li>ショートカットの詳細で「共有シートに表示」をオンにし、受け取る種類を「画像」にする。</li>
+        <li>アクション「壁紙を切り替える」ではなく、「壁紙を設定」（または「写真を壁紙に設定」）を追加し、入力を「ショートカットの入力」にする。利用できるアクション名はiOSのバージョンによって異なる場合があります。</li>
+        <li>設定先をロック画面に指定し、必要に応じてプレビュー表示をオフにする。</li>
+        <li>NOIRの「ショートカットで壁紙を変更」を押し、共有メニューから「NOIR 壁紙変更」を選ぶ。</li></ol>
+        <p>iOSの制限により、NOIRのボタンだけで壁紙を直接変更することはできません。ショートカットを共有メニューで選択する操作が必要です。ショートカットが表示されない場合は共有メニューの「アクションを編集」から追加してください。</p>
+      </details>
       <p class="wallpaper-help" id="wallpaper-status" role="status">タスクを追加・変更したらプレビューも自動で更新されます。</p>
-      <p class="wallpaper-help">保存した画像を「写真」アプリで開き、共有 →「壁紙に設定」から適用してね。予定を変更した場合、壁紙の再保存・再設定が必要です。</p>
+      <p class="wallpaper-help">ショートカットを使わない場合は、保存した画像を「写真」アプリで開き、共有 →「壁紙に設定」から適用してね。予定を変更した場合、壁紙の再保存・再設定が必要です。</p>
     </section>
     <section class="backup-section">
       <p class="eyebrow">YOUR DATA, YOUR CONTROL</p>
@@ -118,9 +127,9 @@
         <input id="import-file" type="file" accept="application/json,.json" hidden>
       </div>
     </section>
-    <footer>LESS NOISE. MORE FOCUS. <span class="version">V5</span></footer>
+    <footer>LESS NOISE. MORE FOCUS. <span class="version">V6</span></footer>
   </main>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
   <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.error));</script>
 </body>
 </html>
