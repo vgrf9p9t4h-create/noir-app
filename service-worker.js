@@ -1,5 +1,5 @@
-const CACHE='noir-pwa-v6';
-const ASSETS=['./','./index.html','./style.css?v=6','./app.js?v=6','./manifest.webmanifest','./icons/noir-192.png','./icons/noir-512.png'];
+const CACHE='noir-pwa-v6-1';
+const ASSETS=['./','./index.html','./style.css?v=6.1','./app.js?v=6.1','./manifest.webmanifest','./icons/noir-192.png','./icons/noir-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('noir-pwa-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',e=>{

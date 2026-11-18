@@ -9,7 +9,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/noir-192.png">
   <title>NOIR</title>
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=6.1">
 </head>
 <body>
   <main class="app" id="top">
@@ -118,6 +118,8 @@
       <p class="wallpaper-help">ショートカットを使わない場合は、保存した画像を「写真」アプリで開き、共有 →「壁紙に設定」から適用してね。予定を変更した場合、壁紙の再保存・再設定が必要です。</p>
     </section>
     <section class="backup-section">
+      <details class="backup-disclosure">
+      <summary>データのバックアップ <span>開く ▾</span></summary>
       <p class="eyebrow">YOUR DATA, YOUR CONTROL</p>
       <h2>データのバックアップ</h2>
       <p class="backup-help">端末変更やブラウザデータ削除に備えて保存できます。</p>
@@ -126,10 +128,11 @@
         <button type="button" id="import-data" class="secondary-btn">バックアップを読み込む</button>
         <input id="import-file" type="file" accept="application/json,.json" hidden>
       </div>
+      </details>
     </section>
-    <footer>LESS NOISE. MORE FOCUS. <span class="version">V6</span></footer>
+    <footer>LESS NOISE. MORE FOCUS. <span class="version">V6.1</span></footer>
   </main>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=6.1"></script>
   <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.error));</script>
 </body>
 </html>

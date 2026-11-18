@@ -75,24 +75,31 @@ function renderFocus(){
 const focusScreen=$("hero-focus");
 const regularSections=[...document.querySelectorAll(".app > header, .app > section:not(.hero-focus):not(.priority-section), .app > footer")];
 $("priority-section").hidden=true;
-function setScreen(focus){
+function setScreen(mode){
+ const focus=mode==="focus",wallpaper=mode==="wallpaper";
  document.body.classList.toggle("focus-mode",focus);
+ document.body.classList.toggle("wallpaper-mode",wallpaper);
  focusScreen.hidden=!focus;
- regularSections.forEach(node=>{node.hidden=focus;});
- document.querySelectorAll(".nav-button").forEach(btn=>btn.classList.toggle("nav-active",focus&&btn.dataset.jump==="focus"||!focus&&btn.dataset.jump==="tasks"));
+ regularSections.forEach(node=>{
+  const isWallpaper=node.id==="wallpaper-section";
+  node.hidden=focus||(wallpaper?!isWallpaper:isWallpaper);
+ });
+ document.querySelectorAll(".nav-button").forEach(btn=>{
+  btn.classList.toggle("nav-active",btn.dataset.jump===mode);
+ });
 }
 function goTo(target){
- const focus=target==="focus";
- setScreen(focus);
- if(focus){window.scrollTo({top:0,behavior:"smooth"});return;}
- if(target==="tasks"){
-  // Always show the beginning of the schedule instead of jumping to the task list.
+ const mode=target==="focus"?"focus":target==="wallpaper"?"wallpaper":"tasks";
+ setScreen(mode);
+ // Change screens without inheriting the previous scroll position.
+ window.scrollTo({top:0,left:0,behavior:"instant"});
+ requestAnimationFrame(()=>{
   window.scrollTo({top:0,left:0,behavior:"instant"});
-  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"instant"}));
-  return;
- }
- const node=$(target==="wallpaper"?"wallpaper-section":"add-section");
- requestAnimationFrame(()=>{node.scrollIntoView({behavior:"smooth",block:"start"});if(target==="add")$("task-title").focus({preventScroll:true});});
+  if(target==="add"){
+   $("add-section").scrollIntoView({behavior:"smooth",block:"start"});
+   $("task-title").focus({preventScroll:true});
+  }
+ });
 }
 document.querySelectorAll("[data-jump]").forEach(btn=>btn.addEventListener("click",()=>goTo(btn.dataset.jump)));
 $("focus-exit").addEventListener("click",()=>goTo("tasks"));
@@ -263,4 +270,4 @@ resetForm();render();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)render();});
 
 // Open in focus mode for a quick glance on iPhone; tasks remain accessible via the bottom navigation.
-setScreen(true);
+setScreen("focus");
