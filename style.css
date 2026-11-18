@@ -142,3 +142,8 @@ body{background:#090909}
 .topbar{margin-top:4px}
 @media(max-width:520px){.app{padding:19px 18px calc(105px + env(safe-area-inset-bottom,0px))}.focus-kicker{margin-top:43px}.focus-item{min-height:70px}}
 @media(min-width:650px){.hero-focus{max-width:none}}
+
+/* V4.2: keep the header below iPhone Dynamic Island / status bar. */
+.app{padding-top:calc(26px + env(safe-area-inset-top, 0px));}
+@media(max-width:520px){.app{padding-top:calc(20px + env(safe-area-inset-top, 0px));}}
+@media(display-mode:standalone){.app{padding-top:calc(28px + env(safe-area-inset-top, 0px));}}
