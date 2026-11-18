@@ -109,3 +109,36 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
 #all-section,#add-section{scroll-margin-top:20px}
 @media(min-width:650px){.hero-focus{max-width:650px;margin:0 auto}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* NOIR 4.1: compact, single-screen focus view */
+:root{--red:#e63838}
+html,body{max-width:100%;overflow-x:hidden}
+body{background:#090909}
+.app{width:min(560px,100%);padding:24px 20px calc(104px + env(safe-area-inset-bottom,0px))}
+.app > [hidden],.hero-focus[hidden]{display:none!important}
+.hero-focus{display:flex;flex-direction:column;min-height:0;margin:0;padding:4px 0 0;gap:0}
+.focus-mode .hero-focus{display:flex}
+.focus-top{align-items:center}
+.focus-brand{font-size:26px;font-weight:800;letter-spacing:.12em}
+.focus-date{font-size:11px;color:#898989}
+.focus-kicker{margin:46px 0 10px;color:#929292;font-size:10px;letter-spacing:.21em}
+.focus-heading{font-size:clamp(27px,7.1vw,37px);font-weight:800;letter-spacing:-.035em;line-height:1.35;margin:0}
+.focus-description{font-size:12px;color:#888;margin:9px 0 27px}
+.focus-items{gap:10px}
+.focus-item{min-height:74px;padding:15px 14px;border:1px solid #2b2b2b;border-radius:12px;background:#171717;gap:13px}
+.focus-index{font-size:12px;align-self:center;color:#e63838}
+.focus-task-title{font-size:clamp(15px,4.2vw,20px);font-weight:650;line-height:1.45}
+.focus-placeholder{font-size:13px;color:#777}
+.focus-check{min-width:38px;min-height:38px;border-color:#6b6b6b;font-size:20px}
+.focus-bottom{margin-top:21px;padding-top:0;gap:10px;letter-spacing:0}
+.focus-exit{padding:8px 0;border:0;background:transparent;color:#f06060;font-size:12px;white-space:nowrap}
+.focus-exit:hover{background:transparent;color:#ff8888}
+.bottom-nav{gap:0;justify-content:space-around;padding:9px max(16px,env(safe-area-inset-left,0px)) calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid #242424;background:rgba(10,10,10,.97)}
+.nav-button{width:33.33%;max-width:145px;min-height:48px;border:0;background:transparent!important;color:#777;padding:5px;border-radius:9px}
+.nav-button span{font-size:20px;margin:0;font-weight:400}
+.nav-button small{font-size:10px}
+.nav-button.nav-active{color:#e63838}
+.nav-add{color:#777}
+.topbar{margin-top:4px}
+@media(max-width:520px){.app{padding:19px 18px calc(105px + env(safe-area-inset-bottom,0px))}.focus-kicker{margin-top:43px}.focus-item{min-height:70px}}
+@media(min-width:650px){.hero-focus{max-width:none}}

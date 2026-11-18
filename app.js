@@ -70,11 +70,21 @@ function renderFocus(){
   }else row.append(el("span","focus-placeholder","最優先タスクを追加しよう"));
   host.append(row);
  }
- $("focus-progress").textContent=`${todayTasks.filter(t=>t.done).length} / ${todayTasks.length} COMPLETE`;
+ $("focus-progress").textContent=`${todayTasks.filter(t=>t.done).length} / ${todayTasks.length} 完了`;
+}
+const focusScreen=$("hero-focus");
+const regularSections=[...document.querySelectorAll(".app > header, .app > section:not(.hero-focus):not(.priority-section), .app > footer")];
+$("priority-section").hidden=true;
+function setScreen(focus){
+ document.body.classList.toggle("focus-mode",focus);
+ focusScreen.hidden=!focus;
+ regularSections.forEach(node=>{node.hidden=focus;});
+ document.querySelectorAll(".nav-button").forEach(btn=>btn.classList.toggle("nav-active",focus&&btn.dataset.jump==="focus"||!focus&&btn.dataset.jump==="tasks"));
 }
 function goTo(target){
- if(target==="focus"){document.body.classList.add("focus-mode");window.scrollTo({top:0,behavior:"smooth"});return;}
- document.body.classList.remove("focus-mode");
+ const focus=target==="focus";
+ setScreen(focus);
+ if(focus){window.scrollTo({top:0,behavior:"smooth"});return;}
  const node=$(target==="add"?"add-section":"all-section");
  requestAnimationFrame(()=>{node.scrollIntoView({behavior:"smooth",block:"start"});if(target==="add")$("task-title").focus({preventScroll:true});});
 }
@@ -147,4 +157,4 @@ resetForm();render();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)render();});
 
 // Open in focus mode for a quick glance on iPhone; tasks remain accessible via the bottom navigation.
-document.body.classList.add("focus-mode");
+setScreen(true);
