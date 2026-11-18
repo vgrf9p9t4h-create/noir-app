@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/noir-192.png">
+  <title>NOIR</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">YOUR DAY, IN CONTROL</p>
+        <h1>NOIR<span class="dot">.</span></h1>
+      </div>
+      <div class="date" id="today"></div>
+    </header>
+
+    <section class="priority-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">FOCUS ON WHAT MATTERS</p>
+          <h2>最優先タスク</h2>
+        </div>
+        <span class="count" id="priority-count">00 / 03</span>
+      </div>
+      <div id="priority-list" class="priority-list">
+        <p class="empty">最優先タスクはまだありません。</p>
+      </div>
+    </section>
+
+    <section class="add-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MAKE IT HAPPEN</p>
+          <h2>タスクを追加</h2>
+        </div>
+      </div>
+      <form id="task-form" class="task-form">
+        <input id="task-title" type="text" maxlength="80" placeholder="やるべきことを入力…" required>
+        <div class="form-row">
+          <input id="task-time" type="time" aria-label="時刻">
+          <select id="task-priority" aria-label="重要度">
+            <option value="normal">通常</option>
+            <option value="important">重要</option>
+            <option value="top">最優先</option>
+          </select>
+          <button type="submit">追加 <span>＋</span></button>
+        </div>
+      </form>
+    </section>
+
+    <section class="all-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">THE FULL PICTURE</p>
+          <h2>今日のタスク</h2>
+        </div>
+        <span class="count" id="all-count">0 ITEMS</span>
+      </div>
+      <div id="task-list" class="task-list">
+        <p class="empty">タスクを追加すると、ここに表示されます。</p>
+      </div>
+    </section>
+    <footer>LESS NOISE. MORE FOCUS.</footer>
+  </main>
+  <script src="app.js"></script>
+  <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.error));</script>
+</body>
+</html>
